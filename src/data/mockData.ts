@@ -194,6 +194,28 @@ export const MOCK_ORDERS: Order[] = [
   },
 ];
 
+export type Customer = {
+  id: string;
+  name: string;
+  phone: string;
+  email?: string;
+  visitCount: number;
+  totalSpent: number;
+  lastVisit: Date;
+  favoriteItem?: string;
+};
+
+export const MOCK_CUSTOMERS: Customer[] = [
+  { id: "c1", name: "Amara Nwosu", phone: "0712 345 678", email: "amara@email.com", visitCount: 14, totalSpent: 312.5, lastVisit: new Date(Date.now() - 1 * 24 * 60 * 60000), favoriteItem: "Avocado Toast" },
+  { id: "c2", name: "Lars Eriksson", phone: "0722 987 654", email: "lars@email.se", visitCount: 8, totalSpent: 189.0, lastVisit: new Date(Date.now() - 2 * 24 * 60 * 60000), favoriteItem: "Harvest Grain Bowl" },
+  { id: "c3", name: "Priya Sharma", phone: "0733 111 222", email: "priya@email.in", visitCount: 22, totalSpent: 478.9, lastVisit: new Date(Date.now() - 0.5 * 24 * 60 * 60000), favoriteItem: "Iced Matcha Latte" },
+  { id: "c4", name: "James Okafor", phone: "0744 555 999", visitCount: 5, totalSpent: 96.0, lastVisit: new Date(Date.now() - 5 * 24 * 60 * 60000), favoriteItem: "Flat White" },
+  { id: "c5", name: "Mei Lin", phone: "0755 321 654", email: "mei@email.cn", visitCount: 31, totalSpent: 720.0, lastVisit: new Date(Date.now() - 0.2 * 24 * 60 * 60000), favoriteItem: "Pistachio Tart" },
+  { id: "c6", name: "Fatima Al-Rashid", phone: "0766 888 333", email: "fatima@email.ae", visitCount: 11, totalSpent: 255.5, lastVisit: new Date(Date.now() - 3 * 24 * 60 * 60000), favoriteItem: "Butter Croissant" },
+  { id: "c7", name: "Diego Reyes", phone: "0777 444 222", visitCount: 2, totalSpent: 38.5, lastVisit: new Date(Date.now() - 10 * 24 * 60 * 60000) },
+  { id: "c8", name: "Anna Kowalski", phone: "0788 222 111", email: "anna@email.pl", visitCount: 17, totalSpent: 391.0, lastVisit: new Date(Date.now() - 1.5 * 24 * 60 * 60000), favoriteItem: "Eggs Benedict" },
+];
+
 export const MOCK_FRANCHISE_APPLICATIONS: FranchiseApplication[] = [
   {
     id: "FA-001",
