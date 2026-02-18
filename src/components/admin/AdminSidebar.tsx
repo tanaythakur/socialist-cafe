@@ -5,9 +5,12 @@ import {
   Store,
   LogOut,
   ChevronRight,
+  BarChart3,
+  Users,
+  Tag,
 } from "lucide-react";
 
-type AdminSection = "orders" | "menu" | "franchise";
+export type AdminSection = "dashboard" | "orders" | "menu" | "categories" | "customers" | "franchise";
 
 type AdminSidebarProps = {
   active: AdminSection;
@@ -15,9 +18,12 @@ type AdminSidebarProps = {
 };
 
 const NAV_ITEMS: { id: AdminSection; label: string; icon: React.ElementType; badge?: number }[] = [
+  { id: "dashboard", label: "Sales Dashboard", icon: BarChart3 },
   { id: "orders", label: "Live Orders", icon: LayoutDashboard, badge: 3 },
   { id: "menu", label: "Menu Management", icon: UtensilsCrossed },
-  { id: "franchise", label: "Franchise Applications", icon: Store, badge: 1 },
+  { id: "categories", label: "Categories", icon: Tag },
+  { id: "customers", label: "Customer Insights", icon: Users },
+  { id: "franchise", label: "Franchise Apps", icon: Store, badge: 1 },
 ];
 
 export function AdminSidebar({ active, onSelect }: AdminSidebarProps) {
