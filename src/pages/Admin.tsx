@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { AdminSidebar, AdminSection } from "@/components/admin/AdminSidebar";
 import { OrderCard } from "@/components/admin/OrderCard";

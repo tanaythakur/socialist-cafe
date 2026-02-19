@@ -1,12 +1,14 @@
+"use client";
+
 import { useCart } from "@/context/CartContext";
 import { CartItemRow } from "@/components/CartItemRow";
 import { X, ShoppingBag } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 export function CartDrawer() {
   const { isOpen, setIsOpen, items, total, itemCount } = useCart();
-  const navigate = useNavigate();
+  const router = useRouter();
 
   // Prevent body scroll when open
   useEffect(() => {
@@ -24,7 +26,7 @@ export function CartDrawer() {
 
   const handleCheckout = () => {
     setIsOpen(false);
-    navigate("/checkout");
+    router.push("/checkout");
   };
 
   return (

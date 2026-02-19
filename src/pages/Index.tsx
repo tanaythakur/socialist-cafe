@@ -1,19 +1,22 @@
+"use client";
+
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams } from "next/navigation";
 import { CATEGORIES, MENU_ITEMS } from "@/data/mockData";
 import { CategoryTabs } from "@/components/CategoryTabs";
 import { MenuItemCard } from "@/components/MenuItemCard";
 import { CartDrawer } from "@/components/CartDrawer";
 import { useCart } from "@/context/CartContext";
 import { ShoppingBag, Leaf } from "lucide-react";
-import heroFood from "@/assets/hero-food.jpg";
+import { images } from "@/assets/images";
 
 export default function MenuPage() {
-  const [searchParams] = useSearchParams();
+  const searchParams = useSearchParams();
   const [selectedCategory, setSelectedCategory] = useState("all");
   const { itemCount, setIsOpen, setTableNumber, tableNumber } = useCart();
 
   useEffect(() => {
+    if (!searchParams) return;
     const table = searchParams.get("table");
     if (table) setTableNumber(parseInt(table, 10));
   }, [searchParams, setTableNumber]);
@@ -61,7 +64,7 @@ export default function MenuPage() {
       {/* Hero Banner */}
       <div className="relative h-44 overflow-hidden">
         <img
-          src={heroFood}
+          src={images.heroFood}
           alt="The Socialist Café"
           className="w-full h-full object-cover"
         />

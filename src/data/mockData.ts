@@ -1,11 +1,4 @@
-import foodCoffee from "@/assets/food-coffee.jpg";
-import foodAvocadoToast from "@/assets/food-avocado-toast.jpg";
-import foodCroissant from "@/assets/food-croissant.jpg";
-import foodSmoothieBowl from "@/assets/food-smoothie-bowl.jpg";
-import foodSalad from "@/assets/food-salad.jpg";
-import foodMatcha from "@/assets/food-matcha.jpg";
-import foodEggsBenedict from "@/assets/food-eggs-benedict.jpg";
-import foodPistachioTart from "@/assets/food-pistachio-tart.jpg";
+import { images } from "@/assets/images";
 
 export type Category = {
   id: string;
@@ -75,7 +68,7 @@ export const MENU_ITEMS: MenuItem[] = [
     name: "Avocado Toast",
     description: "Sourdough toast with smashed avocado, poached eggs, chili flakes & microgreens",
     price: 14.5,
-    image: foodAvocadoToast,
+    image: images.foodAvocadoToast,
     available: true,
     tags: ["vegetarian"],
   },
@@ -85,7 +78,7 @@ export const MENU_ITEMS: MenuItem[] = [
     name: "Eggs Benedict",
     description: "English muffin with smoked salmon, poached eggs & house hollandaise",
     price: 16.9,
-    image: foodEggsBenedict,
+    image: images.foodEggsBenedict,
     available: true,
   },
   {
@@ -94,7 +87,7 @@ export const MENU_ITEMS: MenuItem[] = [
     name: "Butter Croissant",
     description: "Freshly baked all-butter croissant, served warm with jam & cultured butter",
     price: 5.5,
-    image: foodCroissant,
+    image: images.foodCroissant,
     available: true,
     tags: ["vegetarian"],
   },
@@ -104,7 +97,7 @@ export const MENU_ITEMS: MenuItem[] = [
     name: "Green Smoothie Bowl",
     description: "Spirulina & spinach base, granola, fresh berries, coconut flakes & chia seeds",
     price: 12.0,
-    image: foodSmoothieBowl,
+    image: images.foodSmoothieBowl,
     available: true,
     tags: ["vegan", "gluten-free"],
   },
@@ -114,7 +107,7 @@ export const MENU_ITEMS: MenuItem[] = [
     name: "Harvest Grain Bowl",
     description: "Roasted seasonal vegetables, feta, olives, fresh herbs & lemon tahini dressing",
     price: 18.5,
-    image: foodSalad,
+    image: images.foodSalad,
     available: true,
     tags: ["vegetarian"],
   },
@@ -124,7 +117,7 @@ export const MENU_ITEMS: MenuItem[] = [
     name: "Flat White",
     description: "Double ristretto with velvety micro-foam steamed milk, served in ceramic",
     price: 5.0,
-    image: foodCoffee,
+    image: images.foodCoffee,
     available: true,
   },
   {
@@ -133,7 +126,7 @@ export const MENU_ITEMS: MenuItem[] = [
     name: "Iced Matcha Latte",
     description: "Ceremonial grade matcha, oat milk, served over ice. Sweetened or unsweetened",
     price: 6.5,
-    image: foodMatcha,
+    image: images.foodMatcha,
     available: true,
     tags: ["vegan"],
   },
@@ -143,7 +136,7 @@ export const MENU_ITEMS: MenuItem[] = [
     name: "Pistachio Tart",
     description: "House-made pistachio cream in a buttery pastry shell, dusted with icing sugar",
     price: 8.0,
-    image: foodPistachioTart,
+    image: images.foodPistachioTart,
     available: false,
     tags: ["vegetarian"],
   },
@@ -156,8 +149,8 @@ export const MOCK_ORDERS: Order[] = [
     customerName: "Amara Nwosu",
     phone: "0712 345 678",
     items: [
-      { menuItemId: "m1", name: "Avocado Toast", price: 14.5, quantity: 2, image: foodAvocadoToast },
-      { menuItemId: "m6", name: "Flat White", price: 5.0, quantity: 2, image: foodCoffee },
+      { menuItemId: "m1", name: "Avocado Toast", price: 14.5, quantity: 2, image: images.foodAvocadoToast },
+      { menuItemId: "m6", name: "Flat White", price: 5.0, quantity: 2, image: images.foodCoffee },
     ],
     total: 39.0,
     status: "preparing",
@@ -170,8 +163,8 @@ export const MOCK_ORDERS: Order[] = [
     customerName: "Lars Eriksson",
     phone: "0722 987 654",
     items: [
-      { menuItemId: "m5", name: "Harvest Grain Bowl", price: 18.5, quantity: 1, image: foodSalad },
-      { menuItemId: "m7", name: "Iced Matcha Latte", price: 6.5, quantity: 1, image: foodMatcha },
+      { menuItemId: "m5", name: "Harvest Grain Bowl", price: 18.5, quantity: 1, image: images.foodSalad },
+      { menuItemId: "m7", name: "Iced Matcha Latte", price: 6.5, quantity: 1, image: images.foodMatcha },
     ],
     total: 25.0,
     status: "ready",
@@ -184,8 +177,8 @@ export const MOCK_ORDERS: Order[] = [
     customerName: "Priya Sharma",
     phone: "0733 111 222",
     items: [
-      { menuItemId: "m2", name: "Eggs Benedict", price: 16.9, quantity: 1, image: foodEggsBenedict },
-      { menuItemId: "m3", name: "Butter Croissant", price: 5.5, quantity: 2, image: foodCroissant },
+      { menuItemId: "m2", name: "Eggs Benedict", price: 16.9, quantity: 1, image: images.foodEggsBenedict },
+      { menuItemId: "m3", name: "Butter Croissant", price: 5.5, quantity: 2, image: images.foodCroissant },
     ],
     total: 27.9,
     status: "received",

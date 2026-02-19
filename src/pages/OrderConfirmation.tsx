@@ -1,8 +1,13 @@
-import { useLocation, useNavigate, Link } from "react-router-dom";
+"use client";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { StatusStepper } from "@/components/StatusStepper";
 import { OrderItem } from "@/data/mockData";
 import { CheckCircle2, Clock, Home } from "lucide-react";
 import { useEffect, useState } from "react";
+
+const ORDER_CONFIRMATION_KEY = "order-confirmation-state";
 
 type LocationState = {
   orderId: string;
@@ -14,20 +19,34 @@ type LocationState = {
 };
 
 export default function OrderConfirmationPage() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const state = location.state as LocationState | undefined;
+  const router = useRouter();
+  const [state, setState] = useState<LocationState | null | undefined>(undefined);
   const [currentStatus, setCurrentStatus] = useState<"received" | "preparing" | "ready" | "served">("received");
 
-  // Simulate status progression
+  useEffect(() => {
+    const raw = typeof window !== "undefined" ? sessionStorage.getItem(ORDER_CONFIRMATION_KEY) : null;
+    if (raw) {
+      try {
+        setState(JSON.parse(raw) as LocationState);
+        sessionStorage.removeItem(ORDER_CONFIRMATION_KEY);
+      } catch {
+        setState(null);
+      }
+    } else {
+      setState(null);
+    }
+  }, []);
+
   useEffect(() => {
     if (!state) return;
     const t1 = setTimeout(() => setCurrentStatus("preparing"), 8000);
     return () => clearTimeout(t1);
   }, [state]);
 
+  if (state === undefined) return null;
+
   if (!state) {
-    navigate("/");
+    router.replace("/");
     return null;
   }
 
@@ -114,7 +133,7 @@ export default function OrderConfirmationPage() {
 
         {/* Back to menu */}
         <Link
-          to="/"
+          href="/"
           className="flex items-center justify-center gap-2 py-3.5 rounded-2xl border border-border bg-card text-foreground font-semibold text-sm hover:bg-muted/50 transition-all"
         >
           <Home className="w-4 h-4" />

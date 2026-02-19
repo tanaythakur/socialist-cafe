@@ -1,5 +1,7 @@
+"use client";
+
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { OrderSummary } from "@/components/OrderSummary";
 import { ArrowLeft, User, Phone, MapPin, FileText, AlertCircle } from "lucide-react";
@@ -13,8 +15,10 @@ type FormData = {
 
 type FormErrors = Partial<Record<keyof FormData, string>>;
 
+const ORDER_CONFIRMATION_KEY = "order-confirmation-state";
+
 export default function CheckoutPage() {
-  const navigate = useNavigate();
+  const router = useRouter();
   const { items, total, tableNumber, clearCart } = useCart();
   const [form, setForm] = useState<FormData>({
     fullName: "",
@@ -25,7 +29,7 @@ export default function CheckoutPage() {
   const [submitting, setSubmitting] = useState(false);
 
   if (items.length === 0) {
-    navigate("/");
+    router.replace("/");
     return null;
   }
 
@@ -45,17 +49,19 @@ export default function CheckoutPage() {
     // Simulate API call
     await new Promise((r) => setTimeout(r, 1200));
     const orderId = `TSC-${String(Math.floor(Math.random() * 900) + 100)}`;
+    const state = {
+      orderId,
+      items,
+      total,
+      tableNumber,
+      customerName: form.fullName,
+      estimatedMinutes: 15,
+    };
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem(ORDER_CONFIRMATION_KEY, JSON.stringify(state));
+    }
     clearCart();
-    navigate("/order-confirmation", {
-      state: {
-        orderId,
-        items,
-        total,
-        tableNumber,
-        customerName: form.fullName,
-        estimatedMinutes: 15,
-      },
-    });
+    router.push("/order-confirmation");
   };
 
   const Field = ({
@@ -92,7 +98,7 @@ export default function CheckoutPage() {
       <header className="sticky top-0 z-20 bg-card/90 backdrop-blur-md border-b border-border">
         <div className="flex items-center gap-3 px-4 py-4 max-w-2xl mx-auto">
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => router.back()}
             className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center hover:bg-muted transition-colors"
           >
             <ArrowLeft className="w-4 h-4 text-muted-foreground" />
