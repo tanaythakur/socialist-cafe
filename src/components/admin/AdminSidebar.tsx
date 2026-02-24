@@ -8,16 +8,20 @@ import {
   BarChart3,
   Users,
   Tag,
+  Shield,
 } from "lucide-react";
+import type { AdminProfile } from "@/lib/supabase/admin-types";
 
-export type AdminSection = "dashboard" | "orders" | "menu" | "categories" | "customers" | "franchise";
+export type AdminSection = "dashboard" | "orders" | "menu" | "categories" | "customers" | "franchise" | "admin-management";
 
 type AdminSidebarProps = {
   active: AdminSection;
   onSelect: (section: AdminSection) => void;
+  profile: AdminProfile | null;
+  onSignOut: () => void;
 };
 
-const NAV_ITEMS: { id: AdminSection; label: string; icon: React.ElementType; badge?: number }[] = [
+const BASE_NAV_ITEMS: { id: AdminSection; label: string; icon: React.ElementType; badge?: number }[] = [
   { id: "dashboard", label: "Sales Dashboard", icon: BarChart3 },
   { id: "orders", label: "Live Orders", icon: LayoutDashboard, badge: 3 },
   { id: "menu", label: "Menu Management", icon: UtensilsCrossed },
@@ -26,7 +30,12 @@ const NAV_ITEMS: { id: AdminSection; label: string; icon: React.ElementType; bad
   { id: "franchise", label: "Franchise Apps", icon: Store, badge: 1 },
 ];
 
-export function AdminSidebar({ active, onSelect }: AdminSidebarProps) {
+export function AdminSidebar({ active, onSelect, profile, onSignOut }: AdminSidebarProps) {
+  const isSuperAdmin = profile?.role === "super_admin";
+  const NAV_ITEMS = [
+    ...BASE_NAV_ITEMS,
+    ...(isSuperAdmin ? [{ id: "admin-management" as const, label: "Admin Management", icon: Shield }] : []),
+  ];
   return (
     <aside className="w-64 flex-shrink-0 bg-admin-surface border-r border-admin flex flex-col min-h-screen">
       {/* Logo */}
@@ -60,7 +69,7 @@ export function AdminSidebar({ active, onSelect }: AdminSidebarProps) {
             >
               <Icon className="w-4 h-4 flex-shrink-0" />
               <span className="flex-1 text-left">{item.label}</span>
-              {item.badge && (
+              {"badge" in item && item.badge != null && (
                 <span className="bg-primary/20 text-primary text-[10px] font-bold px-1.5 py-0.5 rounded-full">
                   {item.badge}
                 </span>
@@ -73,7 +82,11 @@ export function AdminSidebar({ active, onSelect }: AdminSidebarProps) {
 
       {/* Footer */}
       <div className="px-3 py-4 border-t border-admin">
-        <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-admin-muted hover:text-destructive hover:bg-destructive/10 transition-all">
+        <button
+          type="button"
+          onClick={onSignOut}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-admin-muted hover:text-destructive hover:bg-destructive/10 transition-all"
+        >
           <LogOut className="w-4 h-4" />
           Sign Out
         </button>

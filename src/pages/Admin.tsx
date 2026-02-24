@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { AdminSidebar, AdminSection } from "@/components/admin/AdminSidebar";
 import { OrderCard } from "@/components/admin/OrderCard";
+import { AdminManagementPanel } from "@/components/admin/AdminManagementPanel";
 import {
   MOCK_ORDERS, MOCK_FRANCHISE_APPLICATIONS, MOCK_CUSTOMERS,
   MENU_ITEMS, CATEGORIES,
@@ -10,22 +12,89 @@ import {
 } from "@/data/mockData";
 import { cn } from "@/lib/utils";
 import {
-  Plus, Search, Edit3, Trash2, ToggleLeft, ToggleRight, X, Eye, Menu,
+  Plus, Search, Edit3, Trash2, ToggleLeft, ToggleRight, X, Eye, EyeOff, Menu,
   TrendingUp, ShoppingBag, DollarSign, Star, GripVertical, Users, ArrowUpRight,
 } from "lucide-react";
+import { createClient as createBrowserClient } from "@/lib/supabase/client";
+import type { AdminProfile } from "@/lib/supabase/admin-types";
+import { toast } from "sonner";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 
-// ─── Admin Login ─────────────────────────────────────────────────────────────
-function AdminLogin({ onLogin }: { onLogin: () => void }) {
+const LOGIN_TIMEOUT_MS = 30000;
+
+// ─── Admin Login (Supabase) ─────────────────────────────────────────────────
+function AdminLogin() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email === "admin@socialist.cafe" && password === "admin123") {
-      onLogin();
-    } else {
-      setError("Invalid credentials. Try admin@socialist.cafe / admin123");
+    setLoading(true);
+
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!url || !anonKey) {
+      setLoading(false);
+      toast.error("Config missing", { description: "Check NEXT_PUBLIC_SUPABASE_URL and ANON_KEY in .env" });
+      return;
+    }
+
+    // Standard client se login try karte hain (failed to fetch kabhi SSR client se aata hai)
+    const supabaseAuth = createSupabaseClient(url, anonKey, { auth: { persistSession: false } });
+
+    const signInWithTimeout = () =>
+      Promise.race([
+        supabaseAuth.auth.signInWithPassword({ email, password }),
+        new Promise<{ data: null; error: { message: string } }>((_, reject) =>
+          setTimeout(() => reject(new Error("timeout")), LOGIN_TIMEOUT_MS)
+        ),
+      ]);
+
+    try {
+      const { data, error: signInError } = await signInWithTimeout();
+      if (signInError) {
+        const msg = signInError.message?.toLowerCase() ?? "";
+        if (msg.includes("invalid") || msg.includes("credentials") || msg.includes("email") || msg.includes("password")) {
+          toast.error("Invalid email or password", { description: "Check your credentials and try again." });
+        } else {
+          toast.error("Login failed", { description: signInError.message });
+        }
+        setLoading(false);
+        return;
+      }
+      if (!data?.session) {
+        toast.error("Login failed", { description: "Please try again." });
+        setLoading(false);
+        return;
+      }
+      // Session cookies me daalne ke liye SSR client use karte hain taaki server ko session mile
+      const browserClient = createBrowserClient();
+      await browserClient.auth.setSession({
+        access_token: data.session.access_token,
+        refresh_token: data.session.refresh_token ?? "",
+      });
+      router.refresh();
+      router.push("/admin");
+    } catch (err) {
+      setLoading(false);
+      const msg = err instanceof Error ? err.message : "";
+      if (msg === "timeout") {
+        toast.error("Request timeout", {
+          description: "No response within 30s. Check internet, restore Supabase project if paused, then try again.",
+          duration: 8000,
+        });
+      } else if (msg === "Failed to fetch" || msg.includes("NetworkError") || msg.includes("Load failed")) {
+        toast.error("Failed to fetch — request not reaching Supabase", {
+          description: "1) Check NEXT_PUBLIC_SUPABASE_URL and ANON_KEY in .env. 2) Restart dev server after .env changes (Ctrl+C, then npm run dev). 3) Restore project in Supabase Dashboard if paused. 4) Open your Supabase URL in browser (https://xxx.supabase.co). 5) Try without VPN or a different network.",
+          duration: 12000,
+        });
+      } else {
+        toast.error("Login failed", { description: msg || "Something went wrong." });
+      }
+      return;
     }
   };
 
@@ -48,33 +117,40 @@ function AdminLogin({ onLogin }: { onLogin: () => void }) {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@socialist.cafe"
+              placeholder="you@example.com"
+              required
               className="w-full px-4 py-3 rounded-xl bg-admin-bg border border-admin text-admin placeholder:text-admin-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
             />
           </div>
           <div>
             <label className="text-xs font-medium text-admin-muted mb-1.5 block uppercase tracking-wider">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full px-4 py-3 rounded-xl bg-admin-bg border border-admin text-admin placeholder:text-admin-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+                className="w-full px-4 py-3 pr-11 rounded-xl bg-admin-bg border border-admin text-admin placeholder:text-admin-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((p) => !p)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-lg text-admin-muted hover:text-admin focus:outline-none focus:ring-2 focus:ring-primary/50"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
           </div>
-          {error && (
-            <p className="text-destructive text-xs bg-destructive/10 px-3 py-2 rounded-lg">{error}</p>
-          )}
           <button
             type="submit"
-            className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow-pistachio hover:opacity-90 active:scale-[0.98] transition-all mt-2"
+            disabled={loading}
+            className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow-pistachio hover:opacity-90 active:scale-[0.98] transition-all mt-2 disabled:opacity-50"
           >
-            Sign In
+            {loading ? "Signing in…" : "Sign In"}
           </button>
         </form>
-        <p className="text-admin-muted text-[10px] text-center mt-4 opacity-60">
-          Hint: admin@socialist.cafe / admin123
-        </p>
       </div>
     </div>
   );
@@ -189,7 +265,7 @@ function SalesDashboard() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-admin font-semibold text-sm">Hourly Revenue</p>
-              <p className="text-admin-muted text-xs">Today's earnings by hour</p>
+              <p className="text-admin-muted text-xs">Today&apos;s earnings by hour</p>
             </div>
           </div>
           <div className="flex items-end gap-2 h-36">
@@ -459,9 +535,9 @@ function CategoriesPanel() {
         <div className="fixed inset-0 bg-foreground/60 backdrop-blur-sm z-50 flex items-center justify-center px-4">
           <div className="w-full max-w-xs bg-admin-surface rounded-2xl border border-admin p-6 animate-fade-in text-center">
             <div className="text-4xl mb-3">{deleteTarget.emoji}</div>
-            <h3 className="font-display font-semibold text-admin mb-1">Delete "{deleteTarget.name}"?</h3>
+            <h3 className="font-display font-semibold text-admin mb-1">Delete &quot;{deleteTarget.name}&quot;?</h3>
             <p className="text-admin-muted text-xs mb-5">
-              This will remove the category. Existing menu items won't be deleted.
+              This will remove the category. Existing menu items won&apos;t be deleted.
             </p>
             <div className="flex gap-3">
               <button onClick={() => setDeleteTarget(null)} className="flex-1 py-2.5 rounded-xl border border-admin text-admin-muted text-sm font-medium hover:bg-admin-surface-2 transition-all">Cancel</button>
@@ -892,12 +968,39 @@ function FranchisePanel() {
 }
 
 // ─── Main Admin Page ──────────────────────────────────────────────────────────
-export default function AdminPage() {
-  const [loggedIn, setLoggedIn] = useState(false);
+import type { AdminManagementActions } from "@/components/admin/AdminManagementPanel";
+
+type AdminPageProps = {
+  initialProfile: AdminProfile | null;
+  initialPaused?: boolean;
+  adminActions?: AdminManagementActions | null;
+};
+
+export default function AdminPage({ initialProfile, initialPaused = false, adminActions = null }: AdminPageProps) {
+  const router = useRouter();
   const [section, setSection] = useState<AdminSection>("dashboard");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  useEffect(() => {
+    if (initialPaused && !initialProfile) {
+      createBrowserClient()
+        .auth.signOut()
+        .then(() => router.refresh());
+    }
+  }, [initialPaused, initialProfile, router]);
 
-  if (!loggedIn) return <AdminLogin onLogin={() => setLoggedIn(true)} />;
+  if (!initialProfile) {
+    if (initialPaused) {
+      return (
+        <div className="min-h-screen bg-admin-bg flex items-center justify-center px-4">
+          <div className="w-full max-w-sm bg-admin-surface rounded-2xl border border-admin p-8 text-center">
+            <p className="text-admin font-medium">Your access has been paused.</p>
+            <p className="text-admin-muted text-sm mt-2">Contact the super admin to restore access.</p>
+          </div>
+        </div>
+      );
+    }
+    return <AdminLogin />;
+  }
 
   const SECTION_TITLE: Record<AdminSection, string> = {
     dashboard: "Sales Dashboard",
@@ -906,13 +1009,25 @@ export default function AdminPage() {
     categories: "Category Management",
     customers: "Customer Insights",
     franchise: "Franchise Applications",
+    "admin-management": "Admin Management",
+  };
+
+  const handleSignOut = async () => {
+    await createBrowserClient().auth.signOut();
+    router.refresh();
+    router.push("/admin");
   };
 
   return (
     <div className="min-h-screen bg-admin-bg flex dark">
       {/* Desktop sidebar */}
       <div className="hidden md:flex">
-        <AdminSidebar active={section} onSelect={(s: AdminSection) => setSection(s)} />
+        <AdminSidebar
+          active={section}
+          onSelect={(s: AdminSection) => setSection(s)}
+          profile={initialProfile}
+          onSignOut={handleSignOut}
+        />
       </div>
 
       {/* Mobile sidebar overlay */}
@@ -920,7 +1035,12 @@ export default function AdminPage() {
         <>
           <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={() => setMobileMenuOpen(false)} />
           <div className="fixed left-0 top-0 bottom-0 z-50 md:hidden">
-            <AdminSidebar active={section} onSelect={(s: AdminSection) => { setSection(s); setMobileMenuOpen(false); }} />
+            <AdminSidebar
+              active={section}
+              onSelect={(s: AdminSection) => { setSection(s); setMobileMenuOpen(false); }}
+              profile={initialProfile}
+              onSignOut={handleSignOut}
+            />
           </div>
         </>
       )}
@@ -951,6 +1071,9 @@ export default function AdminPage() {
             {section === "categories" && <CategoriesPanel />}
             {section === "customers" && <CustomerInsightsPanel />}
             {section === "franchise" && <FranchisePanel />}
+            {section === "admin-management" && adminActions && (
+              <AdminManagementPanel currentProfile={initialProfile} actions={adminActions} />
+            )}
           </div>
         </main>
       </div>

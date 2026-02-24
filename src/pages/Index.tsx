@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { CATEGORIES, MENU_ITEMS } from "@/data/mockData";
+import { getCategories, getMenuItems, type Category, type MenuItem } from "@/lib/supabase/menu";
 import { CategoryTabs } from "@/components/CategoryTabs";
 import { MenuItemCard } from "@/components/MenuItemCard";
 import { CartDrawer } from "@/components/CartDrawer";
@@ -13,6 +14,9 @@ import { images } from "@/assets/images";
 export default function MenuPage() {
   const searchParams = useSearchParams();
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [categories, setCategories] = useState<Category[]>(CATEGORIES);
+  const [menuItems, setMenuItems] = useState<MenuItem[]>(MENU_ITEMS);
+  const [loading, setLoading] = useState(true);
   const { itemCount, setIsOpen, setTableNumber, tableNumber } = useCart();
 
   useEffect(() => {
@@ -21,10 +25,32 @@ export default function MenuPage() {
     if (table) setTableNumber(parseInt(table, 10));
   }, [searchParams, setTableNumber]);
 
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    Promise.all([getCategories(), getMenuItems()])
+      .then(([cats, items]) => {
+        if (!cancelled) {
+          setCategories(cats.length ? cats : CATEGORIES);
+          setMenuItems(items.length ? items : MENU_ITEMS);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setCategories(CATEGORIES);
+          setMenuItems(MENU_ITEMS);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, []);
+
   const filteredItems =
     selectedCategory === "all"
-      ? MENU_ITEMS
-      : MENU_ITEMS.filter((i) => i.categoryId === selectedCategory);
+      ? menuItems
+      : menuItems.filter((i) => i.categoryId === selectedCategory);
 
   return (
     <div className="min-h-screen bg-background">
@@ -79,7 +105,7 @@ export default function MenuPage() {
       {/* Category Tabs */}
       <div className="sticky top-[57px] z-20 bg-background/95 backdrop-blur-sm border-b border-border">
         <CategoryTabs
-          categories={CATEGORIES}
+          categories={categories}
           selected={selectedCategory}
           onSelect={setSelectedCategory}
         />
@@ -87,17 +113,25 @@ export default function MenuPage() {
 
       {/* Menu Grid */}
       <main className="max-w-2xl mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 stagger-children">
-          {filteredItems.map((item) => (
-            <MenuItemCard key={item.id} item={item} />
-          ))}
-        </div>
-
-        {filteredItems.length === 0 && (
+        {loading ? (
           <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
-            <p className="text-4xl mb-3">🍽️</p>
-            <p className="font-medium">No items in this category</p>
+            <span className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mb-3" />
+            <p className="font-medium">Loading menu…</p>
           </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 stagger-children">
+              {filteredItems.map((item) => (
+                <MenuItemCard key={item.id} item={item} />
+              ))}
+            </div>
+            {filteredItems.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+                <p className="text-4xl mb-3">🍽️</p>
+                <p className="font-medium">No items in this category</p>
+              </div>
+            )}
+          </>
         )}
       </main>
 

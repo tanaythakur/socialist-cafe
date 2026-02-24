@@ -63,7 +63,7 @@ export default function OrderConfirmationPage() {
           <div className="text-center">
             <h1 className="font-display text-2xl font-bold text-foreground">Order Placed!</h1>
             <p className="text-muted-foreground text-sm mt-1">
-              We'll have it ready for you soon
+              We&apos;ll have it ready for you soon
             </p>
           </div>
         </div>
