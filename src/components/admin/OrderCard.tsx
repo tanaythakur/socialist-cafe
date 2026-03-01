@@ -95,12 +95,12 @@ export function OrderCard({ order, onStatusChange, isNew }: OrderCardProps) {
             <span className="text-admin-muted">
               <span className="text-admin font-medium">×{item.quantity}</span> {item.name}
             </span>
-            <span className="text-admin-muted tabular-nums">${(item.price * item.quantity).toFixed(2)}</span>
+            <span className="text-admin-muted tabular-nums">₹{(item.price * item.quantity).toFixed(2)}</span>
           </div>
         ))}
         <div className="flex justify-between text-sm pt-1 border-t border-admin mt-1">
           <span className="text-admin-muted font-medium">Total</span>
-          <span className="text-admin font-display font-semibold">${order.total.toFixed(2)}</span>
+          <span className="text-admin font-display font-semibold">₹{order.total.toFixed(2)}</span>
         </div>
       </div>
 

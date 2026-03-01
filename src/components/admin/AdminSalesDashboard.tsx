@@ -39,7 +39,7 @@ export function AdminSalesDashboard() {
     },
     {
       label: "Revenue Today",
-      value: `$${revenueToday.toLocaleString("en-US", { minimumFractionDigits: 2 })}`,
+      value: `₹${revenueToday.toLocaleString("en-US", { minimumFractionDigits: 2 })}`,
       sub: "+8.4% vs yesterday",
       icon: DollarSign,
       color: "text-emerald-400",
@@ -48,7 +48,7 @@ export function AdminSalesDashboard() {
     },
     {
       label: "Avg. Order Value",
-      value: `$${avgOrderValue.toFixed(2)}`,
+      value: `₹${avgOrderValue.toFixed(2)}`,
       sub: "+2.1% vs yesterday",
       icon: TrendingUp,
       color: "text-blue-400",
@@ -122,7 +122,7 @@ export function AdminSalesDashboard() {
               return (
                 <div key={h.hour} className="flex-1 flex flex-col items-center gap-1.5 group">
                   <span className="text-[9px] text-admin-muted opacity-0 group-hover:opacity-100 transition-opacity font-medium">
-                    ${h.revenue}
+                    ₹{h.revenue}
                   </span>
                   <div
                     className="w-full rounded-t-lg bg-primary/30 hover:bg-primary/60 transition-colors cursor-default relative overflow-hidden"
@@ -157,7 +157,7 @@ export function AdminSalesDashboard() {
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
                       <span className="text-xs text-admin-muted">{item.orders}x</span>
-                      <span className="text-xs font-semibold text-primary">${item.revenue.toFixed(0)}</span>
+                      <span className="text-xs font-semibold text-primary">₹{item.revenue.toFixed(0)}</span>
                     </div>
                   </div>
                   <div className="h-1.5 bg-admin-surface-2 rounded-full overflow-hidden">

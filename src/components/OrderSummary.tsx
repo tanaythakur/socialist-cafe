@@ -26,14 +26,14 @@ export function OrderSummary({ items, total, tableNumber }: OrderSummaryProps) {
               <p className="text-xs text-muted-foreground">×{item.quantity}</p>
             </div>
             <span className="text-sm font-semibold text-foreground tabular-nums">
-              ${(item.price * item.quantity).toFixed(2)}
+              ₹{(item.price * item.quantity).toFixed(2)}
             </span>
           </div>
         ))}
       </div>
       <div className="px-5 py-4 border-t border-border flex items-center justify-between">
         <span className="text-sm text-muted-foreground">Total</span>
-        <span className="font-display font-bold text-xl text-foreground">${total.toFixed(2)}</span>
+        <span className="font-display font-bold text-xl text-foreground">₹{total.toFixed(2)}</span>
       </div>
     </div>
   );

@@ -180,7 +180,7 @@ export default function CheckoutPage() {
                   Placing Order…
                 </span>
               ) : (
-                `Confirm Order • $${total.toFixed(2)}`
+                `Confirm Order • ₹${total.toFixed(2)}`
               )}
             </button>
           </form>

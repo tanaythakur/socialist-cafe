@@ -32,7 +32,7 @@ export function CartItemRow({ item }: CartItemRowProps) {
             </button>
           </div>
           <p className="text-muted-foreground text-xs mt-0.5">
-            ${item.price.toFixed(2)} each
+            ₹{item.price.toFixed(2)} each
           </p>
 
           {/* Quantity stepper */}
@@ -57,7 +57,7 @@ export function CartItemRow({ item }: CartItemRowProps) {
               </button>
             </div>
             <span className="font-display font-semibold text-sm text-foreground">
-              ${(item.price * item.quantity).toFixed(2)}
+              ₹{(item.price * item.quantity).toFixed(2)}
             </span>
           </div>
         </div>

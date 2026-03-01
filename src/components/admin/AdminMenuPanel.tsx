@@ -210,7 +210,7 @@ export function AdminMenuPanel() {
                   <td className="px-4 py-3 text-admin-muted capitalize hidden md:table-cell">
                         {categories.find((c) => c.id === item.categoryId)?.name ?? item.categoryId}
                       </td>
-                  <td className="px-4 py-3 text-admin font-display font-semibold">${item.price.toFixed(2)}</td>
+                  <td className="px-4 py-3 text-admin font-display font-semibold">₹{item.price.toFixed(2)}</td>
                   <td className="px-4 py-3 text-center">
                     <button
                       onClick={() => void toggleAvailability(item.id)}
@@ -276,7 +276,7 @@ export function AdminMenuPanel() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-admin-muted mb-1.5 block uppercase tracking-wider">Price ($)</label>
+                  <label className="text-xs text-admin-muted mb-1.5 block uppercase tracking-wider">Price (₹)</label>
                   <input
                     type="number"
                     step="0.01"

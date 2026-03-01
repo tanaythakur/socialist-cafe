@@ -86,7 +86,7 @@ export function CartDrawer() {
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground text-sm">Subtotal</span>
               <span className="font-display font-semibold text-foreground text-lg">
-                ${total.toFixed(2)}
+                ₹{total.toFixed(2)}
               </span>
             </div>
             <button

@@ -44,8 +44,8 @@ export function AdminCustomerInsightsPanel() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
         {[
           { label: "Total Customers", value: totalCustomers.toString(), icon: Users, color: "text-blue-400", bg: "bg-blue-400/10" },
-          { label: "Total Revenue", value: `$${totalRevenue.toFixed(0)}`, icon: DollarSign, color: "text-emerald-400", bg: "bg-emerald-400/10" },
-          { label: "Avg. Lifetime Spend", value: `$${avgSpend.toFixed(0)}`, icon: TrendingUp, color: "text-primary", bg: "bg-primary/10" },
+          { label: "Total Revenue", value: `₹${totalRevenue.toFixed(0)}`, icon: DollarSign, color: "text-emerald-400", bg: "bg-emerald-400/10" },
+          { label: "Avg. Lifetime Spend", value: `₹${avgSpend.toFixed(0)}`, icon: TrendingUp, color: "text-primary", bg: "bg-primary/10" },
           { label: "Top Spender", value: topCustomer ? topCustomer.name.split(" ")[0] : "—", icon: Star, color: "text-yellow-400", bg: "bg-yellow-400/10" },
         ].map((kpi) => {
           const Icon = kpi.icon;
@@ -137,10 +137,10 @@ export function AdminCustomerInsightsPanel() {
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <span className="text-primary font-display font-bold">${c.totalSpent.toFixed(2)}</span>
+                    <span className="text-primary font-display font-bold">₹{c.totalSpent.toFixed(2)}</span>
                   </td>
                   <td className="px-4 py-3">
-                    <span className="text-admin-muted">${(c.totalSpent / c.visitCount).toFixed(2)}</span>
+                    <span className="text-admin-muted">₹{(c.totalSpent / c.visitCount).toFixed(2)}</span>
                   </td>
                   <td className="px-4 py-3">
                     <span

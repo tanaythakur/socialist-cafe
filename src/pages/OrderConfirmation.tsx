@@ -108,14 +108,14 @@ export default function OrderConfirmationPage() {
                   <p className="text-xs text-muted-foreground">×{item.quantity}</p>
                 </div>
                 <span className="text-sm font-semibold text-foreground tabular-nums">
-                  ${(item.price * item.quantity).toFixed(2)}
+                  ₹{(item.price * item.quantity).toFixed(2)}
                 </span>
               </div>
             ))}
           </div>
           <div className="px-5 py-4 border-t border-border bg-muted/30 flex justify-between">
             <span className="text-sm text-muted-foreground">Total Paid</span>
-            <span className="font-display font-bold text-foreground text-lg">${total.toFixed(2)}</span>
+            <span className="font-display font-bold text-foreground text-lg">₹{total.toFixed(2)}</span>
           </div>
         </div>
 

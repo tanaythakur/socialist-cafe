@@ -84,7 +84,7 @@ export function MenuItemCard({ item }: MenuItemCardProps) {
 
         <div className="flex items-center justify-between">
           <span className="font-display text-lg font-semibold text-foreground">
-            ${item.price.toFixed(2)}
+            ₹{item.price.toFixed(2)}
           </span>
           <button
             onClick={handleAdd}
