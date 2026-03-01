@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { AdminSidebar, AdminSection } from "@/components/admin/AdminSidebar";
 import { OrderCard } from "@/components/admin/OrderCard";
 import {
@@ -9,23 +9,65 @@ import {
   Order, OrderStatus, MenuItem, FranchiseApplication, Category, Customer,
 } from "@/data/mockData";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/lib/supabase/client";
 import {
   Plus, Search, Edit3, Trash2, ToggleLeft, ToggleRight, X, Eye, Menu,
   TrendingUp, ShoppingBag, DollarSign, Star, GripVertical, Users, ArrowUpRight,
 } from "lucide-react";
 
 // ─── Admin Login ─────────────────────────────────────────────────────────────
-function AdminLogin({ onLogin }: { onLogin: () => void }) {
+function AdminLogin({
+  onLogin,
+  sessionMessage,
+}: {
+  onLogin: () => void;
+  sessionMessage?: string;
+}) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email === "admin@socialist.cafe" && password === "admin123") {
+    setError("");
+    setLoading(true);
+    try {
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+      if (authError) {
+        setError(authError.message ?? "Invalid email or password.");
+        return;
+      }
+      if (!authData.user?.id) {
+        setError("Login failed. Please try again.");
+        return;
+      }
+      const { data: settings } = await supabase
+        .from("service_settings")
+        .select("service_paused")
+        .limit(1)
+        .maybeSingle();
+      if (settings?.service_paused) {
+        await supabase.auth.signOut();
+        setError("Service is paused. Please try again later.");
+        return;
+      }
+      const { data: adminRow, error: adminError } = await supabase
+        .from("admins")
+        .select("user_id")
+        .eq("user_id", authData.user.id)
+        .maybeSingle();
+      if (adminError || !adminRow) {
+        await supabase.auth.signOut();
+        setError("This account is not an admin.");
+        return;
+      }
       onLogin();
-    } else {
-      setError("Invalid credentials. Try admin@socialist.cafe / admin123");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -62,19 +104,22 @@ function AdminLogin({ onLogin }: { onLogin: () => void }) {
               className="w-full px-4 py-3 rounded-xl bg-admin-bg border border-admin text-admin placeholder:text-admin-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
             />
           </div>
+          {sessionMessage && (
+            <p className="text-primary text-xs bg-primary/10 px-3 py-2 rounded-lg border border-primary/20">
+              {sessionMessage}
+            </p>
+          )}
           {error && (
             <p className="text-destructive text-xs bg-destructive/10 px-3 py-2 rounded-lg">{error}</p>
           )}
           <button
             type="submit"
-            className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow-pistachio hover:opacity-90 active:scale-[0.98] transition-all mt-2"
+            disabled={loading}
+            className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow-pistachio hover:opacity-90 active:scale-[0.98] transition-all mt-2 disabled:opacity-70 disabled:pointer-events-none"
           >
-            Sign In
+            {loading ? "Signing in…" : "Sign In"}
           </button>
         </form>
-        <p className="text-admin-muted text-[10px] text-center mt-4 opacity-60">
-          Hint: admin@socialist.cafe / admin123
-        </p>
       </div>
     </div>
   );
@@ -896,8 +941,60 @@ export default function AdminPage() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [section, setSection] = useState<AdminSection>("dashboard");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [sessionMessage, setSessionMessage] = useState<string | undefined>();
 
-  if (!loggedIn) return <AdminLogin onLogin={() => setLoggedIn(true)} />;
+  const checkServiceAndAdmin = useCallback(async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user?.id) return false;
+    const { data: settings } = await supabase
+      .from("service_settings")
+      .select("service_paused")
+      .limit(1)
+      .maybeSingle();
+    if (settings?.service_paused) return false;
+    const { data: adminRow } = await supabase
+      .from("admins")
+      .select("user_id")
+      .eq("user_id", session.user.id)
+      .maybeSingle();
+    return Boolean(adminRow);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const isAdmin = await checkServiceAndAdmin();
+      if (!cancelled && isAdmin) setLoggedIn(true);
+    })();
+    return () => { cancelled = true; };
+  }, [checkServiceAndAdmin]);
+
+  useEffect(() => {
+    if (!loggedIn) return;
+    let cancelled = false;
+    const interval = setInterval(async () => {
+      const { data } = await supabase
+        .from("service_settings")
+        .select("service_paused")
+        .limit(1)
+        .maybeSingle();
+      if (!cancelled && data?.service_paused) {
+        await supabase.auth.signOut();
+        setLoggedIn(false);
+        setSessionMessage("Service is paused. You have been signed out.");
+      }
+    }, 15000);
+    return () => { cancelled = true; clearInterval(interval); };
+  }, [loggedIn]);
+
+  if (!loggedIn) {
+    return (
+      <AdminLogin
+        onLogin={() => { setSessionMessage(undefined); setLoggedIn(true); }}
+        sessionMessage={sessionMessage}
+      />
+    );
+  }
 
   const SECTION_TITLE: Record<AdminSection, string> = {
     dashboard: "Sales Dashboard",
