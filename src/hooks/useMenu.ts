@@ -36,18 +36,20 @@ async function fetchCategories(): Promise<Category[]> {
   }));
 }
 
+type MenuItemRowDb = MenuItemRow & { image_url?: string | null };
+
 async function fetchMenuItems(): Promise<MenuItem[]> {
   const { data, error } = await supabase
     .from("menu_items")
-    .select("id, category_id, name, description, price, image, available, tags");
+    .select("id, category_id, name, description, price, image, image_url, available, tags");
   if (error) throw error;
-  return (data ?? []).map((r: MenuItemRow) => ({
+  return (data ?? []).map((r: MenuItemRowDb) => ({
     id: r.id,
     categoryId: r.category_id,
     name: r.name,
     description: r.description ?? "",
     price: Number(r.price),
-    image: r.image || "",
+    image: (r as MenuItemRowDb).image_url ?? r.image ?? "",
     available: r.available ?? true,
     tags: r.tags ?? undefined,
   }));

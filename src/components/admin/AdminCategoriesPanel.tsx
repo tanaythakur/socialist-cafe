@@ -223,7 +223,7 @@ export function AdminCategoriesPanel() {
               <div className="text-4xl mb-3">{deleteTarget.emoji}</div>
               <h3 className="font-display font-semibold text-admin mb-1">Delete &quot;{deleteTarget.name}&quot;?</h3>
               <p className="text-admin-muted text-xs mb-5">
-                This will remove the category. Existing menu items won&apos;t be deleted.
+                This will remove the category and all {(itemCountByCategoryId[deleteTarget.id] ?? 0)} item(s) in it. This cannot be undone.
               </p>
               <div className="flex gap-3">
                 <button

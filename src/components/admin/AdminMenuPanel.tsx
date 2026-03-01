@@ -31,7 +31,7 @@ export function AdminMenuPanel() {
       .order("display_order", { ascending: true });
     const { data: itemsData } = await supabase
       .from("menu_items")
-      .select("id, category_id, name, description, price, image, available, tags");
+      .select("id, category_id, name, description, price, image, image_url, available, tags");
     setCategories(
       (catData ?? []).map((r: { id: string; name: string; emoji: string }) => ({
         id: r.id,
@@ -47,7 +47,8 @@ export function AdminMenuPanel() {
           name: string;
           description: string;
           price: number;
-          image: string;
+          image?: string;
+          image_url?: string | null;
           available: boolean;
           tags: string[] | null;
         }) => ({
@@ -56,7 +57,7 @@ export function AdminMenuPanel() {
           name: r.name,
           description: r.description ?? "",
           price: Number(r.price),
-          image: r.image || "",
+          image: r.image_url ?? r.image ?? "",
           available: r.available ?? true,
           tags: r.tags ?? undefined,
         })
@@ -110,7 +111,7 @@ export function AdminMenuPanel() {
       description: formDescription.trim(),
       price,
       category_id: categoryId,
-      image: formImage.trim(),
+      image_url: formImage.trim() || null,
       available: formAvailable,
     };
     if (editItem) {
@@ -206,7 +207,9 @@ export function AdminMenuPanel() {
                       <span className="text-admin font-medium">{item.name}</span>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-admin-muted capitalize hidden md:table-cell">{item.categoryId}</td>
+                  <td className="px-4 py-3 text-admin-muted capitalize hidden md:table-cell">
+                        {categories.find((c) => c.id === item.categoryId)?.name ?? item.categoryId}
+                      </td>
                   <td className="px-4 py-3 text-admin font-display font-semibold">${item.price.toFixed(2)}</td>
                   <td className="px-4 py-3 text-center">
                     <button
