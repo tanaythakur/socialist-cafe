@@ -19,8 +19,8 @@ export function AdminCategoriesPanel() {
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
 
-  const loadCategories = useCallback(async () => {
-    setLoading(true);
+  const loadCategories = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
     const { data: catData } = await supabase
       .from("categories")
       .select("id, name, emoji, display_order")
@@ -38,7 +38,7 @@ export function AdminCategoriesPanel() {
       }))
     );
     setItemCountByCategoryId(countMap);
-    setLoading(false);
+    if (!silent) setLoading(false);
   }, []);
 
   useEffect(() => {
@@ -73,13 +73,13 @@ export function AdminCategoriesPanel() {
     }
     setSaving(false);
     setShowModal(false);
-    await loadCategories();
+    await loadCategories(true);
   };
 
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from("categories").delete().eq("id", id);
     if (!error) setDeleteTarget(null);
-    await loadCategories();
+    await loadCategories(true);
   };
 
   const handleDragStart = (i: number) => setDragIndex(i);

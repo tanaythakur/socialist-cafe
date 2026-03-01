@@ -23,8 +23,8 @@ export function AdminMenuPanel() {
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<MenuItem | null>(null);
 
-  const loadMenu = useCallback(async () => {
-    setLoading(true);
+  const loadMenu = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
     const { data: catData } = await supabase
       .from("categories")
       .select("id, name, emoji")
@@ -62,7 +62,7 @@ export function AdminMenuPanel() {
         })
       )
     );
-    setLoading(false);
+    if (!silent) setLoading(false);
   }, []);
 
   useEffect(() => {
@@ -123,13 +123,13 @@ export function AdminMenuPanel() {
     }
     setSaving(false);
     setShowModal(false);
-    await loadMenu();
+    await loadMenu(true);
   };
 
   const handleDeleteItem = async (id: string) => {
     await supabase.from("menu_items").delete().eq("id", id);
     setDeleteTarget(null);
-    await loadMenu();
+    await loadMenu(true);
   };
 
   const filtered = items.filter((i) => i.name.toLowerCase().includes(search.toLowerCase()));

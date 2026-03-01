@@ -22,6 +22,7 @@ const SECTION_TITLE: Record<AdminSection, string> = {
 };
 
 export default function AdminPage() {
+  const [authChecking, setAuthChecking] = useState(true);
   const [loggedIn, setLoggedIn] = useState(false);
   const [section, setSection] = useState<AdminSection>("dashboard");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -48,7 +49,10 @@ export default function AdminPage() {
     let cancelled = false;
     (async () => {
       const isAdmin = await checkServiceAndAdmin();
-      if (!cancelled && isAdmin) setLoggedIn(true);
+      if (!cancelled) {
+        setLoggedIn(!!isAdmin);
+        setAuthChecking(false);
+      }
     })();
     return () => { cancelled = true; };
   }, [checkServiceAndAdmin]);
@@ -70,6 +74,14 @@ export default function AdminPage() {
     }, 15000);
     return () => { cancelled = true; clearInterval(interval); };
   }, [loggedIn]);
+
+  if (authChecking) {
+    return (
+      <div className="min-h-screen bg-admin-bg flex items-center justify-center dark">
+        <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+      </div>
+    );
+  }
 
   if (!loggedIn) {
     return (
